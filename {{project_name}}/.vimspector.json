@@ -1,0 +1,48 @@
+{
+  "configurations": {
+    "Rust - Test": {
+      "adapter": "CodeLLDB",
+      "variables": {
+          "TestBinary": {
+              "shell": [
+                  "/bin/bash",
+                  "-c",
+                  "cargo test --quiet --no-run && /bin/ls -t ${workspaceRoot}/target/debug/deps | /usr/bin/rg $$(echo ${relativeFileDirname} | /usr/bin/cut -d'/' -f1)-[a-z0-9]+$$ | /usr/bin/head -1" 
+              ]
+          }
+      },
+      "configuration": {
+        "request": "launch",
+        "program": "${workspaceRoot}/target/debug/deps/${TestBinary}",
+        "environment": [
+            {"name": "EQUIFY_CONFIG_FOLDER", "value": "$(workspaceRoot)/equify_lib"},
+            {"name": "EQUIFY_SECRET_FOLDER", "value": "$(workspaceRoot)/equify_lib"},
+            {"name": "RUST_LOG", "value": "debug"}
+        
+        ]
+      }
+    },
+    "Rust - Binary": {
+      "adapter": "CodeLLDB",
+      "variables": {
+          "Binary": {
+              "shell": [
+                  "/bin/bash",
+                  "-c",
+                  "cargo build --quiet && echo $$(echo ${relativeFileDirname} | /usr/bin/cut -d'/' -f1)" 
+              ]
+          }
+      },
+      "configuration": {
+        "request": "launch",
+        "program": "${workspaceRoot}/target/debug/${Binary}",
+        "environment": [
+            {"name": "EQUIFY_CONFIG_FOLDER", "value": "$(workspaceRoot)/equify_lib"},
+            {"name": "EQUIFY_SECRET_FOLDER", "value": "$(workspaceRoot)/equify_lib"},
+            {"name": "RUST_LOG", "value": "debug"}
+        
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+name = "Rust CLI template"
+description = "A very opinionated CLI template for Rust projects "
+kickstart_version = 1
+url = "https://github.com/hmuendel/rust-cli-template"
+authors = [
+    "Hans Mündelein <hans@muendelein.me>"
+]
+ignore = [
+    ".gitignore",
+    "README.md",
+    "LICENSE",
+]
+
+cleanup = [
+    {name = "debugging", value = "None", paths = ["{{project_name}}/.vimspector.json"]},
+]
+
+[[variables]]
+name = "project_name"
+default = "cli"
+prompt = "What's the name of the project?"
+validation = "^([a-zA-Z][a-zA-Z0-9_-]+)$"
+
+[[variables]]
+name = "description"
+default = "A CLI application"
+prompt = "A short description of the app?"
+
+[[variables]]
+name = "long_description"
+default = "TODO: Finish writing detailed documentation"
+prompt = "A detailed documentation of your app?"
+
+[[variables]]
+name = "author"
+default = "Anonymous"
+prompt = "What is your name?"
+
+[[variables]]
+name = "email"
+default = "anony@mous.com"
+prompt = "What is your email?"
+
+[[variables]]
+name = "license"
+default = "MIT"
+prompt = "Which open-source license do you want to use?"
+choices = [
+    "MIT",
+    "BSD",
+    "GPLv3",
+    "None",
+]
+
+[[variables]]
+name = "debugging"
+default = "Vimspector"
+prompt = "Which debugging setup do you want to use?"
+choices = [
+    "Vimspector",
+    "None",
+]
+
+[[variables]]
+name = "autotag"
+default = "Yes"
+prompt = "Do you want you git repo tagged during build with the cargo version if this tag does not exist?"
+choices = [
+    "Yes",
+    "No",
+]
+

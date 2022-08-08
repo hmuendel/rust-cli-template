@@ -1,0 +1,3 @@
+[workspace]
+members = ["{{project_name}}", "{{project_name}}-lib"]
+

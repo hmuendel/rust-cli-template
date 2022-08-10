@@ -13,12 +13,29 @@ ignore = [
 
 cleanup = [
     {name = "debugging", value = "None", paths = ["{{project_name}}/.vimspector.json"]},
+    {name = "license", value = "None", paths = [
+    "{{project_name}}/LICENSE", 
+    "{{project_name}}/{%- if bin_name %}{{ bin_name }}{% else %}{{ project_name }}{% endif -%}/LICENSE",
+    "{{project_name}}/{%- if lib_name %}{{ lib_name }}{% else %}{{ project_name }}_lib{% endif -%}/LICENSE",
+    ]},
 ]
 
 [[variables]]
 name = "project_name"
 default = "cli"
 prompt = "What's the name of the project?"
+validation = "^([a-zA-Z][a-zA-Z0-9_-]+)$"
+
+[[variables]]
+name = "bin_name"
+default = ""
+prompt = "Name of the binary, if not set uses the project name"
+validation = "^([a-zA-Z][a-zA-Z0-9_-]+)$"
+
+[[variables]]
+name = "lib_name"
+default = ""
+prompt = "Name of the library, if not set uses the project name with -lib suffix"
 validation = "^([a-zA-Z][a-zA-Z0-9_-]+)$"
 
 [[variables]]
@@ -33,12 +50,12 @@ prompt = "A detailed documentation of your app?"
 
 [[variables]]
 name = "author"
-default = "Anonymous"
+default = "No One"
 prompt = "What is your name?"
 
 [[variables]]
 name = "email"
-default = "anony@mous.com"
+default = "no@one.test"
 prompt = "What is your email?"
 
 [[variables]]

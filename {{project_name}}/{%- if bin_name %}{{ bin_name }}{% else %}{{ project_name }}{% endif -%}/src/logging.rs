@@ -6,17 +6,22 @@
 //! different threads or asynchronous execution.
 //!
 //! The verbosity can be controlled via the verbosity config option.
-
 use crate::Cfg;
+use once_cell::sync::OnceCell;
 use tracing::{debug, info, trace, warn};
+use tracing_appender::non_blocking::WorkerGuard;
 use tracing_log::log::LevelFilter;
+
+static GUARD: OnceCell<WorkerGuard> = OnceCell::new();
 
 pub fn setup_logging(cfg: &Cfg) {
     if let Err(err) = tracing_log::LogTracer::init() {
         println!("Failed to initialize log tracer: {}", err);
     }
     // create appender for standard error
-    let (non_blocking, _guard) = tracing_appender::non_blocking(std::io::stderr());
+    let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stderr());
+    GUARD.set(guard).expect("Failed to set appender guard");
+
     let tracing_level = match cfg.verbosity.log_level_filter() {
         LevelFilter::Off => None,
         LevelFilter::Error => Some(tracing::Level::ERROR),
@@ -39,4 +44,5 @@ pub fn setup_logging(cfg: &Cfg) {
         LevelFilter::Debug => debug!("Verbosity level set to debug"),
         LevelFilter::Trace => trace!("Verbosity level set to trace"),
     }
+    trace!("Logging initialized");
 }

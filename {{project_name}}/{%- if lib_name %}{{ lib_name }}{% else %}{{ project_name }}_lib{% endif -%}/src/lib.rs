@@ -21,17 +21,29 @@
 //!     return “composite”
 //! return “probably prime”
 //! ```
+//!
+#![feature(test)]
 use once_cell::sync::OnceCell;
 use rand::{self, Rng};
 use tracing::{debug, error, info, instrument, span, trace, warn};
 
-pub static CONFIG: OnceCell<Config> = OnceCell::new();
+static CONFIG: OnceCell<Config> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct Config {
     pub number_of_threads: usize,
     pub number_of_iterations: usize,
     pub known_primes: Vec<u32>,
+}
+
+impl std::fmt::Display for Config {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(
+            f,
+            "Config: number_of_threads: {}, number_of_iterations: {}, known_primes: {:?} ",
+            self.number_of_threads, self.number_of_iterations, self.known_primes
+        )
+    }
 }
 
 impl Default for Config {
@@ -64,7 +76,7 @@ impl Config {
 }
 
 #[instrument(level = "trace")]
-pub fn modular_exponentiation(base: u32, exponent: u32, modulus: u32) -> u32 {
+fn modular_exponentiation(base: u32, exponent: u32, modulus: u32) -> u32 {
     let mut result = 1;
     let mut base = base as u64;
     let mut exponent = exponent as u32;
@@ -83,12 +95,8 @@ pub fn modular_exponentiation(base: u32, exponent: u32, modulus: u32) -> u32 {
 
 /// Factors out powers of 2 from n to bring it to the form 2^s·d + 1 with d odd.
 /// Returns (s, d).
-/// ```
-/// use {{project_name}}_lib::factor_out_2;
-/// assert_eq!(factor_out_2(18), (1, 9))
-/// ```
 #[instrument(level = "trace")]
-pub fn factor_out_2(mut n: u32) -> (u32, u32) {
+fn factor_out_2(mut n: u32) -> (u32, u32) {
     if n == 0 {
         trace!("n is zero");
         return (0, 0);
@@ -157,7 +165,7 @@ pub fn rabin_miller(n: u32) -> bool {
 }
 
 #[instrument(level = "info")]
-fn find_possible_primes(from: u32, to: u32) -> Vec<u32> {
+pub fn find_possible_primes(from: u32, to: u32) -> Vec<u32> {
     if from > to {
         error!("from ({}) is greater than to ({})", from, to);
         return vec![];
@@ -216,14 +224,8 @@ fn find_possible_primes(from: u32, to: u32) -> Vec<u32> {
 mod tests {
     use super::*;
     use table_test::table_test;
+    extern crate test;
     use test_log::test;
-    fn init() {
-        Config::init_if_possible(Config {
-            number_of_iterations: 2,
-            number_of_threads: 8,
-            known_primes: vec![11, 13],
-        });
-    }
     #[test]
     fn test_even_factorisations() {
         let cases = vec![
@@ -273,6 +275,13 @@ mod tests {
                 .assert_eq((exponent, remainder), (actual_exp, actual_remainder));
         }
     }
+    #[bench]
+    fn bench_factorisation(b: &mut test::Bencher) {
+        b.iter(|| {
+            let n = rand::random::<u32>();
+            factor_out_2(n);
+        });
+    }
     #[test]
     fn test_modular_exponentiation() {
         let cases = vec![
@@ -295,62 +304,6 @@ mod tests {
                 .given(&format!("{}^{} mod {}", base, exponent, modulus))
                 .then(&format!("should be {}", expected))
                 .assert_eq(expected, actual);
-        }
-    }
-    #[test]
-    fn test_miller_rabin() {
-        init();
-        let cases = vec![
-            (1, false),
-            (2, true),
-            (3, true),
-            (4, false),
-            (5, true),
-            (2147483647, true),
-            (u32::MAX - 5, false),
-            (u32::MAX - 4, true),
-            (u32::MAX - 3, false),
-            (u32::MAX - 2, false),
-            (u32::MAX - 1, false),
-            (u32::MAX, false),
-        ];
-        for (validator, input, expect_prime) in table_test!(cases) {
-            let is_prime = rabin_miller(input);
-            validator
-                .given(&format!("number to test {}", input))
-                .then(&format!("{} should be prime: {}", input, expect_prime))
-                .assert_eq(expect_prime, is_prime);
-        }
-    }
-    #[test]
-    fn test_inverted_range() {
-        assert_eq!(find_possible_primes(10, 0), vec![]);
-    }
-    #[test]
-    fn test_finding_primes() {
-        init();
-        let cases = vec![
-            ((0, 0), vec![]),
-            ((1, 1), vec![]),
-            ((2, 2), vec![2]),
-            ((3, 3), vec![3]),
-            ((4, 4), vec![]),
-            ((1, 10), vec![2, 3, 5, 7]),
-            ((2, 10), vec![2, 3, 5, 7]),
-            ((3, 10), vec![3, 5, 7]),
-            ((4, 10), vec![5, 7]),
-            ((1, 15), vec![2, 3, 5, 7, 11, 13]),
-            ((5, 15), vec![5, 7, 11, 13]),
-            ((1, 17), vec![2, 3, 5, 7, 11, 13, 17]),
-            ((u32::MAX - 10, u32::MAX), vec![u32::MAX - 4]),
-        ];
-        for (validator, (from, to), expected_primes) in table_test!(cases) {
-            let mut actual_primes = find_possible_primes(from, to);
-            actual_primes.sort();
-            validator
-                .given(&format!("finding primes between {} and {}", from, to))
-                .then(&format!("expecting {:#?} ", expected_primes))
-                .assert_eq(expected_primes, actual_primes);
         }
     }
 }

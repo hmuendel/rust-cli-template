@@ -1,5 +1,9 @@
 [package]
-name = "{{project_name}}-lib"
+{% if lib_name -%}
+name = "{{ lib_name }}"
+{%- else -%}
+name = "{{ project_name }}_lib"
+{%- endif %}
 version = "0.1.0"
 edition = "2021"
 license = "{{license}}"

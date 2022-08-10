@@ -1,11 +1,12 @@
-use clap::Args;
 /// The cli module defines all subcommands and sets up the cli parser
 ///
 /// Additional commands can be added via the `Commands` enum
 ///
+use clap::Args;
 use clap::{
     crate_authors, crate_description, crate_name, crate_version, Parser, Subcommand, ValueHint,
 };
+#[cfg(feature = "completion")]
 use clap_complete::Shell;
 use clap_verbosity_flag::LogLevel;
 use clap_verbosity_flag::Verbosity;
@@ -20,7 +21,7 @@ use tracing_log::log::Level;
     author = crate_authors!("\n"),
     version = crate_version!(),
     about = crate_description!(),
-    long_about = "{{long_description}}",
+    long_about = "Use the Rabin-Miller algorithms to search for possible prime numbers within a range of numbers",
     arg_required_else_help = true
 )]
 pub struct Cli {
@@ -42,10 +43,21 @@ pub struct Cli {
 #[derive(Subcommand)]
 #[clap()]
 pub enum Commands {
+    #[cfg(feature = "completion")]
     /// Generates completion scripts for the specified shell
     Completion {
         #[clap(value_parser, action)]
         shell: Shell,
+    },
+    /// Finds prime candidates within a range of numbers
+    #[clap(name = "find", value_parser, action)]
+    FindPrimesCandidates {
+        #[clap(value_name = "LOWER")]
+        lower_bound: u32,
+        #[clap(value_name = "UPPER")]
+        upper_bound: u32,
+        #[clap(flatten)]
+        config: PrimeCfg,
     },
 }
 
@@ -53,10 +65,41 @@ pub enum Commands {
 /// it is merged from the config file, the environment and the command line
 /// arguments
 #[derive(Args, Debug)]
+#[clap()]
 pub struct Cfg {
     /// Define the verbosity of the application
     #[clap(flatten)]
     pub verbosity: Verbosity<CustomLevel>,
+}
+
+#[derive(Args, Debug)]
+pub struct PrimeCfg {
+    /// The number of threads to use for the prime candidate search
+    #[clap(
+        short = 't',
+        long,
+        value_name = "THREADS",
+        required = false,
+        default_value = "4"
+    )]
+    pub number_of_threads: usize,
+    /// The iterations of the Rabin-Miller algorithm loop, the higher the
+    /// number, the more accurate the result
+    #[clap(
+        short = 'n',
+        long,
+        value_name = "NUMBER",
+        required = false,
+        default_value = "100"
+    )]
+    pub number_of_iterations: usize,
+    /// A list of know primes which will be checked before running the
+    /// Rabin-Miller algorithm
+    #[clap(short, long)]
+    pub known_primes: Vec<u32>,
+    /// The separator with which the resulting numbers are separated
+    #[clap(short, long, required = false, default_value = " ")]
+    pub separator: String,
 }
 
 /// This custom log is used to have control over help messages
@@ -68,7 +111,6 @@ impl LogLevel for CustomLevel {
     fn default() -> Option<Level> {
         Some(Level::Error)
     }
-
     fn quiet_help() -> Option<&'static str> {
         Some("Quiet, suppress all logging")
     }

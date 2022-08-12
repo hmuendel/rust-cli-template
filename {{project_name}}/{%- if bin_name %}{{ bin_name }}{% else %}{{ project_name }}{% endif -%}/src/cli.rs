@@ -28,7 +28,9 @@ pub struct Cli {
     /// Sets a custom config file
     #[clap(short, long,  value_name = "FILE", value_hint = ValueHint::FilePath)]
     pub config: Option<PathBuf>,
+    
     /// Print build information
+    #[cfg(feature = "build_info")]
     #[clap(long)]
     pub build_info: bool,
     /// The main configuration params live here, some of them can be set as global flags
@@ -49,6 +51,7 @@ pub enum Commands {
         #[clap(value_parser, action)]
         shell: Shell,
     },
+    {% if example_lib -%}
     /// Finds prime candidates within a range of numbers
     #[clap(name = "find", value_parser, action)]
     FindPrimesCandidates {
@@ -59,6 +62,7 @@ pub enum Commands {
         #[clap(flatten)]
         config: PrimeCfg,
     },
+    {%- endif -%}
 }
 
 /// This structs contains the global configuration for the application
@@ -72,6 +76,7 @@ pub struct Cfg {
     pub verbosity: Verbosity<CustomLevel>,
 }
 
+{% if example_lib -%}
 #[derive(Args, Debug)]
 pub struct PrimeCfg {
     /// The number of threads to use for the prime candidate search
@@ -101,6 +106,7 @@ pub struct PrimeCfg {
     #[clap(short, long, required = false, default_value = " ")]
     pub separator: String,
 }
+{%- endif -%}
 
 /// This custom log is used to have control over help messages
 #[derive(Debug)]

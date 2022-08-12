@@ -1,12 +1,9 @@
-#![feature(test)]
-
 {% if lib_name -%}
-use {{ lib_name }}::*;
+use {{  lib_name | replace(from="-", to="_") }}::*;
 {%- else -%}
-use {{ project_name }}_lib::*;
+use {{  project_name | replace(from="-", to="_") }}_lib::*;
 {%- endif %}
 use table_test::table_test;
-extern crate test;
 use test_log::test;
 mod common;
 use common::init;

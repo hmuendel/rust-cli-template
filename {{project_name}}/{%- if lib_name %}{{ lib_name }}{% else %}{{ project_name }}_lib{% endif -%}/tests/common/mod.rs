@@ -1,7 +1,7 @@
 {% if lib_name -%}
-use {{ lib_name }}::*;
+use {{  lib_name | replace(from="-", to="_") }}::*;
 {%- else -%}
-use {{ project_name }}_lib::*;
+use {{  project_name | replace(from="-", to="_") }}_lib::*;
 {%- endif %}
 pub fn init() {
     Config::init_if_possible(Config {

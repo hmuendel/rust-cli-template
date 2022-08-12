@@ -10,6 +10,3 @@ Cargo.lock
 **/*.rs.bk
 
 
-# Generated files should be regenerated upon each build and not checked in
-**/man
-**/completion

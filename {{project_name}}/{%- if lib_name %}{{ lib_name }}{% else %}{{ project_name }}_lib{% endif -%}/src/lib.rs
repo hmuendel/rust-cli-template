@@ -1,7 +1,5 @@
-//! We are trying to find possible prime numbers in a range of numbers.
-//! For this we use a probabilistic prime testing algorithms, on all the numbers
-//! in the range, to get candiates with high probability. In our case we use the
-//! [Rabin Miller primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
+//! The [Rabin Miller primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
+//!
 //! the algorithm can be implemented in pseudocode like this.
 //! ```text
 //! Input #1: n > 3, an odd integer to be tested for primality
@@ -22,7 +20,9 @@
 //! return “probably prime”
 //! ```
 //!
+{% if benches -%}
 #![feature(test)]
+{%- endif -%}
 use once_cell::sync::OnceCell;
 use rand::{self, Rng};
 use tracing::{debug, error, info, instrument, span, trace, warn};
@@ -224,7 +224,9 @@ pub fn find_possible_primes(from: u32, to: u32) -> Vec<u32> {
 mod tests {
     use super::*;
     use table_test::table_test;
+{% if benches -%}
     extern crate test;
+{%- endif -%}
     use test_log::test;
     #[test]
     fn test_even_factorisations() {
@@ -275,6 +277,7 @@ mod tests {
                 .assert_eq((exponent, remainder), (actual_exp, actual_remainder));
         }
     }
+{%- if benches -%}
     #[bench]
     fn bench_factorisation(b: &mut test::Bencher) {
         b.iter(|| {
@@ -282,6 +285,7 @@ mod tests {
             factor_out_2(n);
         });
     }
+{%- endif -%}
     #[test]
     fn test_modular_exponentiation() {
         let cases = vec![

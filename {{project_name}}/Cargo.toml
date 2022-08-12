@@ -1,5 +1,7 @@
 [workspace]
 members = [
     "{%- if bin_name %}{{ bin_name }}{% else %}{{ project_name }}{% endif -%}",
+    {% if example_lib %}
     "{%- if lib_name %}{{ lib_name }}{% else %}{{ project_name }}_lib{% endif -%}",
+    {%- endif -%}
 ]

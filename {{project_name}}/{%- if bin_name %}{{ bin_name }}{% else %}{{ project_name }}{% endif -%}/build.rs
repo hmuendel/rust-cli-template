@@ -1,16 +1,16 @@
 use clap::CommandFactory;
 use clap_complete::{generate_to, shells};
 use clap_mangen::Man;
-
 use std::fs;
-{% if autotag == "Yes" %}
+{% if autotag %}
 use std::process;
 {% endif %}
 
 // the cli source file is included for generation purposes
 include!("src/cli.rs");
+#[cfg(feature = "build_info")]
 fn main() -> shadow_rs::SdResult<()> {
-{% if autotag == "Yes" %}
+{% if autotag %}
     // tagging the git repo with the version from cargo if the tag doesn't
     // already exist
     if !get_git_tags().contains(&env!("CARGO_PKG_VERSION").to_string()) {
@@ -27,7 +27,24 @@ fn main() -> shadow_rs::SdResult<()> {
     shadow_rs::new()
 }
 
-{% if autotag == "Yes" %}
+#[cfg(not(feature = "build_info"))]
+fn main() {
+{% if autotag %}
+    // tagging the git repo with the version from cargo if the tag doesn't
+    // already exist
+    if !get_git_tags().contains(&env!("CARGO_PKG_VERSION").to_string()) {
+        tag_git_repo();
+    }
+{% endif %}
+    //parsing the cli for generation tasks
+    let cli = Cli::command();
+    // generating the man pages in a folder in the manifest directory
+    create_man_pages(cli.clone());
+    // generating the completion functions in a folder in the manifest directory
+    create_shell_completions(cli);
+}
+
+{% if autotag %}
 // tagging the git repo with the version from cargo
 fn tag_git_repo() {
     let output = process::Command::new("git")

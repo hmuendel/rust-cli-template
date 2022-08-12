@@ -1,9 +1,9 @@
 #![feature(test)]
 
 {% if lib_name -%}
-use {{ lib_name }}::*;
+use {{  lib_name | replace(from="-", to="_") }}::*;
 {%- else -%}
-use {{ project_name }}_lib::*;
+use {{  project_name | replace(from="-", to="_") }}_lib::*;
 {%- endif %}
 extern crate test;
 mod common;

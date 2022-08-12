@@ -1,2 +1,5 @@
+{%- if not example_lib -%}
+{%- set toolchain = "stable" -%}
+{%- endif -%}
 [toolchain]
-channel = "nightly"
+channel = "{{ toolchain }}"

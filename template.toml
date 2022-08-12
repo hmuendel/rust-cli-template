@@ -13,6 +13,15 @@ ignore = [
 
 cleanup = [
     {name = "debugging", value = "None", paths = ["{{project_name}}/.vimspector.json"]},
+    {name = "example_lib", value = false, paths = [
+    "{{project_name}}/{%- if lib_name %}{{ lib_name }}{% else %}{{ project_name }}_lib{% endif -%}",
+    ]},
+    {name = "toolchain", value = "stable", paths = [
+    "{{project_name}}/{%- if lib_name %}{{ lib_name }}{% else %}{{ project_name }}_lib{% endif -%}/benches",
+    ]},
+    {name = "benches", value = false, paths = [
+    "{{project_name}}/{%- if lib_name %}{{ lib_name }}{% else %}{{ project_name }}_lib{% endif -%}/benches",
+    ]},
     {name = "license", value = "None", paths = [
     "{{project_name}}/LICENSE", 
     "{{project_name}}/{%- if bin_name %}{{ bin_name }}{% else %}{{ project_name }}{% endif -%}/LICENSE",
@@ -35,7 +44,7 @@ validation = "^([a-zA-Z][a-zA-Z0-9_-]+)$"
 [[variables]]
 name = "lib_name"
 default = ""
-prompt = "Name of the library, if not set uses the project name with -lib suffix"
+prompt = "Name of the library, if not set uses the project name with _lib suffix"
 validation = "^([a-zA-Z][a-zA-Z0-9_-]+)$"
 
 [[variables]]
@@ -70,6 +79,27 @@ choices = [
 ]
 
 [[variables]]
+name = "example_lib"
+default = true
+prompt = "Create a working example lib, that show how the cli is wired and with example tests and docs. It is recommended to nudge oneself to create nice libs."
+
+[[variables]]
+name = "toolchain"
+default = "nightly"
+prompt = "Which debugging toolchain to use for the project, nightly is required for benchmarks"
+choices = [
+    "nightly",
+    "stable",
+]
+only_if = { name = "example_lib", value = true }
+
+[[variables]]
+name = "benches"
+default = true
+prompt = "Do you want to have the benchmarks for the example lib created."
+only_if= { name = "toolchain", value = "nightly" }
+
+[[variables]]
 name = "debugging"
 default = "Vimspector"
 prompt = "Which debugging setup do you want to use?"
@@ -80,10 +110,6 @@ choices = [
 
 [[variables]]
 name = "autotag"
-default = "Yes"
+default = true
 prompt = "Do you want you git repo tagged during build with the cargo version if this tag does not exist?"
-choices = [
-    "Yes",
-    "No",
-]
 
